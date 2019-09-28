@@ -10,28 +10,62 @@ const searchOpt = {
  * the userId contains this value at the beginning
  */
 const cookieValue = "lo_";
+var status = false;
 
-chrome.runtime.onInstalled.addListener(function() {});
+chrome.runtime.onInstalled.addListener(function() {
+  // setup
+  chrome.storage.local.set({ clear_cookies: true }, function() {});
+  status = true;
+
+  chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+    chrome.declarativeContent.onPageChanged.addRules([
+      {
+        conditions: [new chrome.declarativeContent.PageStateMatcher({})],
+        actions: [new chrome.declarativeContent.ShowPageAction()]
+      }
+    ]);
+  });
+});
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.message === "query_status") {
+    chrome.runtime.sendMessage({
+      message: "status",
+      payload: status
+    });
+  }
+  if (request.message === "set_status") {
+    chrome.storage.local.set({ clear_cookies: request.payload }, function() {});
+    status = request.payload;
+  }
+});
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-  chrome.cookies.getAll(searchOpt, function(cookies) {
-    const filtered = cookies.filter(cookie =>
-      cookie.value.includes(cookieValue)
-    );
-    const res = JSON.stringify(filtered);
+  chrome.storage.local.get("clear_cookies", function(value) {
+    if (value.clear_cookies) {
+      status = true;
+      chrome.cookies.getAll(searchOpt, function(cookies) {
+        const filtered = cookies.filter(cookie =>
+          cookie.value.includes(cookieValue)
+        );
+        const res = JSON.stringify(filtered);
 
-    filtered.forEach(cookie => {
-      const cUrl = getUrlFromCookie(cookie);
-      chrome.cookies.remove(
-        { url: cUrl, name: cookie.name, storeId: cookie.storeId },
-        function(details) {}
-      );
-    });
+        filtered.forEach(cookie => {
+          const cUrl = getUrlFromCookie(cookie);
+          chrome.cookies.remove(
+            { url: cUrl, name: cookie.name, storeId: cookie.storeId },
+            function(details) {}
+          );
+        });
 
-    chrome.tabs.sendMessage(tabId, {
-      message: "resolved_Cookies",
-      payload: res
-    });
+        chrome.tabs.sendMessage(tabId, {
+          message: "resolved_Cookies",
+          payload: res
+        });
+      });
+    } else {
+      status = false;
+    }
   });
 });
 

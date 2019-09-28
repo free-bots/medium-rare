@@ -12,5 +12,14 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "permissions": ["cookies", "http://*/*", "https://*/*"]
+  "permissions": [
+    "cookies",
+    "http://*/*",
+    "https://*/*",
+    "storage",
+    "declarativeContent"
+  ],
+  "page_action": {
+    "default_popup": "views/popup.html"
+  }
 }
