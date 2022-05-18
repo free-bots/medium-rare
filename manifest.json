@@ -1,8 +1,8 @@
 {
   "name": "Medium Rare",
-  "version": "0.1",
+  "version": "1.0.0",
   "description": "Removes the limit of post from medium based blog sites.",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
@@ -10,16 +10,18 @@
     }
   ],
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
   "permissions": [
     "cookies",
-    "http://*/*",
-    "https://*/*",
     "storage",
     "declarativeContent"
   ],
-  "page_action": {
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "action": {
     "default_popup": "views/popup.html"
   }
 }

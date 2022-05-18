@@ -48,7 +48,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         const filtered = cookies.filter(cookie =>
           cookie.value.includes(cookieValue)
         );
-        const res = JSON.stringify(filtered);
 
         filtered.forEach(cookie => {
           const cUrl = getUrlFromCookie(cookie);
@@ -56,11 +55,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
             { url: cUrl, name: cookie.name, storeId: cookie.storeId },
             function(details) {}
           );
-        });
-
-        chrome.tabs.sendMessage(tabId, {
-          message: "resolved_Cookies",
-          payload: res
         });
       });
     } else {
